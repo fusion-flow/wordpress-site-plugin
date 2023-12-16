@@ -1,5 +1,7 @@
 wp-admin
-wp-content
+themes
+uploads
+app/public/wp-content/index.php
 wp-includes
 .htaccess
 license.txt
