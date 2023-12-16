@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Front to the WordPress application. This file doesn't do anything, but loads
  * wp-blog-header.php which does and tells WordPress to load the theme.
@@ -26,11 +27,13 @@ echo "<script>console.log('this is a Variable: ' );</script>";
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Home Page</title>
 </head>
+
 <body>
 
     <header>
@@ -48,7 +51,7 @@ echo "<script>console.log('this is a Variable: ' );</script>";
     <main>
         <section>
             <h2>About Us</h2>
-            <p>This is a simple home page created using PHP and HTML.</p>
+            <p>We are web developers.</p>
         </section>
 
         <section>
@@ -62,8 +65,9 @@ echo "<script>console.log('this is a Variable: ' );</script>";
     </footer>
 
 </body>
+
 </html>
 
-<script> 
- console.log('this is a Variable:');
+<script>
+    console.log('this is a Variable:');
 </script>
