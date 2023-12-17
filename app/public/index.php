@@ -12,7 +12,8 @@
  *
  * @var bool
  */
-// define( 'WP_USE_THEMES', true );
+define('WP_USE_THEMES', true);
+// require __DIR__ . '/wp-blog-header.php';
 
 /** Loads the WordPress Environment and Template */
 // require __DIR__ . '/resource.php';
@@ -47,8 +48,8 @@ switch ($url) {
 // echo "<script>console.log('this is a Variable: ' );</script>";
 
 ?>
-<!--  
-<!DOCTYPE html>
+
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -86,6 +87,7 @@ switch ($url) {
     <footer>
         <p>&copy; 2023 My Website. All rights reserved.</p>
     </footer>
+    <a class="more-link" href="' . get_permalink() . '">Click me!</a>
 
 </body>
 

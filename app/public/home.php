@@ -15,21 +15,35 @@
 
     <div class="Resources">
         <div>
-            <a href="/resource.php?type=<?php echo urlencode("Communication Support"); ?>"> <p>Communication Support</p> </a></section>
+            <a href="/resource.php?type=<?php echo urlencode("Communication Support"); ?>">
+                <p>Communication Support</p>
+            </a></section>
         </div>
         <div>
-            <a href="/resource.php?type=<?php echo urlencode("Therapy"); ?>"> <p>Therapy</p> </a>
+            <a href="/resource.php?type=<?php echo urlencode("Therapy"); ?>">
+                <p>Therapy</p>
+            </a>
         </div>
         <div>
-            <a href="/resource.php?type=<?php echo urlencode("Emotions and Social Life"); ?>"> <p>Emotions and Social Life</p> </a>
+            <a href="/resource.php?type=<?php echo urlencode("Emotions and Social Life"); ?>">
+                <p>Emotions and Social Life</p>
+            </a>
         </div>
         <div>
-            <a href="/resource.php?type=<?php echo urlencode("Getting on with life"); ?>"> <p>Getting on with life</p> </a></section>
+            <a href="/resource.php?type=<?php echo urlencode("Getting on with life"); ?>">
+                <p>Getting on with life</p>
+            </a></section>
         </div>
         <div>
-            <a href="/resource.php?type=<?php echo urlencode("Help with technology"); ?>"> <p>Help with technology</p> </a>
+            <a href="/resource.php?type=<?php echo urlencode("Help with technology"); ?>">
+                <p>Help with technology</p>
+            </a>
+        </div>
+        <div>
+            <a class="more-link" href="' . get_permalink() . '">Click me!</a>
         </div>
     </div>
+
 </body>
 
 </html>
