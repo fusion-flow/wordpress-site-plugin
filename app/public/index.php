@@ -15,16 +15,16 @@
 // define( 'WP_USE_THEMES', true );
 
 /** Loads the WordPress Environment and Template */
-require __DIR__ . '/wp-blog-header.php';
+require __DIR__ . '/resource.php';
 
 ?>
 
 <?php
-echo "Silence is golden.";
-echo "<script>console.log('this is a Variable: ' );</script>";
+// echo "Silence is golden.";
+// echo "<script>console.log('this is a Variable: ' );</script>";
 
 ?>
-
+<!--  
 <!DOCTYPE html>
 <html lang="en">
 
@@ -70,4 +70,4 @@ echo "<script>console.log('this is a Variable: ' );</script>";
 
 <script>
     console.log('this is a Variable:');
-</script>
+</script> -->
