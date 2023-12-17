@@ -15,19 +15,19 @@
 
     <div class="Resources">
         <div>
-            <a href="/com-support"> <p>Communication Support</p> </a></section>
+            <a href="/resource.php?type=<?php echo urlencode("Communication Support"); ?>"> <p>Communication Support</p> </a></section>
         </div>
         <div>
-            <a href="/therapy"> <p>Therapy</p> </a>
+            <a href="/resource.php?type=<?php echo urlencode("Therapy"); ?>"> <p>Therapy</p> </a>
         </div>
         <div>
-            <a href="/emotion-support"> <p>Emotions and Social Life</p> </a>
+            <a href="/resource.php?type=<?php echo urlencode("Emotions and Social Life"); ?>"> <p>Emotions and Social Life</p> </a>
         </div>
         <div>
-            <a href="/life"> <p>Getting on with life</p> </a></section>
+            <a href="/resource.php?type=<?php echo urlencode("Getting on with life"); ?>"> <p>Getting on with life</p> </a></section>
         </div>
         <div>
-            <a href="/tech-support"> <p>Help with technology</p> </a>
+            <a href="/resource.php?type=<?php echo urlencode("Help with technology"); ?>"> <p>Help with technology</p> </a>
         </div>
     </div>
 </body>

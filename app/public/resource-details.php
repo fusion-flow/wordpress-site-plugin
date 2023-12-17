@@ -1,3 +1,13 @@
+<?php 
+
+$title = "";
+
+if(isset($_GET['title'])) {
+    $title = urldecode($_GET['title']);
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -25,7 +35,7 @@
 <body>
 
     <header>
-        <h1>Sample resource page</h1>
+        <h1><?php echo $title; ?></h1>
     </header>
 
     <section>
