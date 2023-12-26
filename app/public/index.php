@@ -13,32 +13,32 @@
  * @var bool
  */
 define('WP_USE_THEMES', true);
-// require __DIR__ . '/wp-blog-header.php';
+require __DIR__ . '/wp-blog-header.php';
 
 /** Loads the WordPress Environment and Template */
 // require __DIR__ . '/resource.php';
 
 
 // Get the requested URL
-$url = isset($_GET['url']) ? $_GET['url'] : '/';
+// $url = isset($_GET['url']) ? $_GET['url'] : '/';
 
-// Define your routes
-switch ($url) {
-    case '/':
-        require 'home.php';
-        break;
-    case '/resource':
-        require 'resource.php';
-        break;
-    case '/resource-details':
-        require 'resource-details.php';
-        break;
-    default:
-        // Handle 404 Not Found
-        header('HTTP/1.0 404 Not Found');
-        require 'home.php';
-        break;
-}
+// // Define your routes
+// switch ($url) {
+//     case '/':
+//         require 'home.php';
+//         break;
+//     case '/resource':
+//         require 'resource.php';
+//         break;
+//     case '/resource-details':
+//         require 'resource-details.php';
+//         break;
+//     default:
+//         // Handle 404 Not Found
+//         header('HTTP/1.0 404 Not Found');
+//         require 'home.php';
+//         break;
+// }
 
 
 ?>
