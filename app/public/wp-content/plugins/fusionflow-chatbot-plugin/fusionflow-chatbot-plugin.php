@@ -23,7 +23,12 @@ function add_chatbot_icon()
                 <div class="chat-input-container">
                     <input type="text" id="chat-input" placeholder="Type your message...">
                     <button onclick="sendMessage()">Send</button>
+                    <!-- Place these elements wherever you want the audio recorder to appear -->
+                    <button id="togglebtn" onclick="toggleRecord()">Start</button>                   
                 </div>
+                <button onclick="playRecording()">Play</button>
+                    <audio id="audioPlayer" controls></audio>
+                    <video id="videoPlayer" controls></video>
             </div>
         </div>
     </div>
@@ -125,10 +130,78 @@ function add_chatbot_icon()
                 chatInput.value = '';
             }
         }
+
+        let mediaRecorder;
+        let audioChunks = [];
+        let videoChunks = [];
+        let isRecording = false;
+        const toggleBtn = document.getElementById('togglebtn');
+        
+        function toggleRecord(){
+            console.log("record toggled, is recording", isRecording);
+            if (isRecording) {
+                stopRecording();
+                toggleBtn.innerText = "Start";
+            } else {
+                startRecording();
+                toggleBtn.innerText = "Stop";
+            }
+        }
+
+        function startRecording() {
+            console.log("Recording Started")
+        navigator.mediaDevices.getUserMedia({ audio: true, video: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                        videoChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioPlayer.src = audioUrl;
+                    const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+                    const videoUrl = URL.createObjectURL(videoBlob);
+                    videoPlayer.src = videoUrl;
+                    isRecording = false;
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                console.log(" is recording", isRecording);
+            })
+            .catch(error => {
+                console.error('Error accessing microphone:', error);
+            });
+    }
+    function stopRecording() {
+        console.log("Recording Stopped")
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            mediaRecorder.stop();
+        }
+    }
+
+    function playRecording() {
+        if (audioPlayer.src) {
+            audioPlayer.play();
+        }
+        if (videoPlayer.src) {
+            videoPlayer.play();
+        }
+    }
     </script>
 <?php
 }
 
+function audio_recorder_enqueue_scripts() {
+    wp_enqueue_script('audio-recorder-script', plugin_dir_url(__FILE__) . 'js/audio-recorder.js', array('jquery'), '1.0', true);
+}
+
 // Hook the function to wp_footer to add the icon and chatbox to the footer of each page
 add_action('wp_footer', 'add_chatbot_icon');
+add_action('wp_enqueue_scripts', 'audio_recorder_enqueue_scripts');
 ?>
