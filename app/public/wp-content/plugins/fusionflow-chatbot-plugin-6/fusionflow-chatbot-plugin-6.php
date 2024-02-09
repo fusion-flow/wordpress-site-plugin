@@ -180,6 +180,66 @@ function add_chatbot_icon()
             }
         }
 
+        socket.on("response", (message)=>{
+            console.log(message);
+            
+
+            // get the number of intents
+            let num_intents = Object.keys(message).length;
+
+            if(num_intents == 1) {
+                let intent = Object.keys(message)[0];
+                let url = message[intent];
+
+                 // Create a SpeechSynthesisUtterance
+                const utterance = new SpeechSynthesisUtterance(intent);
+                // Select a voice
+                const voices = speechSynthesis.getVoices();
+                utterance.voice = voices[0]; // Choose a specific voice
+
+                // Speak the text
+                speechSynthesis.speak(utterance);
+
+                window.location.assign(url);
+            } else if(num_intents == 0) {
+                var chatInput = document.getElementById('chat-input');
+                var chatMessages = document.getElementById('chat-messages');
+                chatMessages.innerHTML += '<p>Alex: Couldn\'t found the page</p>';
+
+                // Create a SpeechSynthesisUtterance
+                 const utterance = new SpeechSynthesisUtterance("Couldn't found the page");
+                // Select a voice
+                const voices = speechSynthesis.getVoices();
+                utterance.voice = voices[0]; // Choose a specific voice
+
+                // Speak the text
+                speechSynthesis.speak(utterance);
+            } else {
+                var chatInput = document.getElementById('chat-input');
+                var chatMessages = document.getElementById('chat-messages');
+                chatMessages.innerHTML += '<p>Alex: Following are the pages found</p>';
+                let chatbot_response = "Pages I found are ";
+
+                for(let intent in message) {
+                    if(message.hasOwnProperty(intent)) {
+                        let url = message[intent];
+                        chatMessages.innerHTML += '<p><a href="' + url + '">' + intent + '</a></p>';
+                        chatbot_response += intent;
+                    }
+                }
+
+                // Create a SpeechSynthesisUtterance
+                const utterance = new SpeechSynthesisUtterance(chatbot_response);
+                // Select a voice
+                const voices = speechSynthesis.getVoices();
+                utterance.voice = voices[0]; // Choose a specific voice
+
+                // Speak the text
+                speechSynthesis.speak(utterance);
+            }
+            
+        });
+
         function sendMessage() {
             var chatInput = document.getElementById('chat-input');
             var message = chatInput.value;
@@ -187,16 +247,16 @@ function add_chatbot_icon()
             if (message.trim() !== '') {
                 var chatMessages = document.getElementById('chat-messages');
                 chatMessages.innerHTML += '<p>User: ' + message + '</p>';
-
+                // chatMessages.innerHTML += '<a href="http://fusionflow2.local/resource-categories/communication-support/">Communication Supprot</a>'
+                // Using window.location.assign()
+                // window.location.assign("http://fusionflow2.local/resource-categories/communication-support/");
                 // Add logic here to process the user's message and get a response from the chatbot
                 // For now, let's simulate a simple response from the chatbot
 
                 // send message to backend through a websocket
                 socket.emit("message", message);
 
-                socket.on("message", (message)=>{
-                    console.log(message)
-                });
+                
                 // Save conversation history to localStorage
                 localStorage.setItem('chatHistory', JSON.stringify(message));
 
