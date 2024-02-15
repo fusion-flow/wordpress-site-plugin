@@ -39,11 +39,11 @@ function add_chatbot_icon()
                         <button onclick="sendMessage()">Send</button>
                         <!-- Place these elements wherever you want the audio recorder to appear -->
                         <button id="togglebtn" onclick="toggleRecord()">Start</button>  
-                        <img id="record" src="{{ url_for('static', filename='audio/mic128.png') }}" onclick="toggleRecording(this);">                 
+                        <!-- <img id="record" src="{{ url_for('static', filename='audio/mic128.png') }}" onclick="toggleRecording(this);">                  -->
                     </div>
-                    <button onclick="playRecording()">Play</button>
+                    <!-- <button onclick="playRecording()">Play</button>
                         <audio id="audioPlayer" controls></audio>
-                        <video id="videoPlayer" controls></video>
+                        <video id="videoPlayer" controls></video> -->
                 </div>
             </div>
         </div>
@@ -204,10 +204,10 @@ function add_chatbot_icon()
             } else if(num_intents == 0) {
                 var chatInput = document.getElementById('chat-input');
                 var chatMessages = document.getElementById('chat-messages');
-                chatMessages.innerHTML += '<p>Alex: Couldn\'t found the page</p>';
+                chatMessages.innerHTML += '<p>Alex: Couldn\'t find the page</p>';
 
                 // Create a SpeechSynthesisUtterance
-                 const utterance = new SpeechSynthesisUtterance("Couldn't found the page");
+                 const utterance = new SpeechSynthesisUtterance("Couldn't find the page");
                 // Select a voice
                 const voices = speechSynthesis.getVoices();
                 utterance.voice = voices[0]; // Choose a specific voice
