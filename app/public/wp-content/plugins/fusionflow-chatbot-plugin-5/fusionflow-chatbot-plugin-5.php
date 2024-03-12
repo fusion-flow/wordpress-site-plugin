@@ -7,34 +7,44 @@ Author: FusionFlow
 */
 
 // Add chatbot icon HTML, CSS, and JavaScript
-
-session_start();
-
 function add_chatbot_icon()
 {
-?>
-    <div class="chatbot-container">
-        <div class="chatbot-icon" id="chatbot-icon" onclick="hideChatbotIcon()">
-            <img src="http://fusionflow2.local/wp-content/uploads/2023/12/chatbot.png" alt="Chatbot Icon">
-        </div>
-        <div class="chatbox" id="chatbox" style="display: none;">
-            <div class="chatbox-header">
-                <span onclick="toggleChatbox()">Close</span>
+    
+?>  
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"> -->
+        <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"></script>
+        <!-- <script src="/socket.io/socket.io.js"></script> -->
+    </head>
+    <body>
+        <div class="chatbot-container">
+            <div class="chatbot-icon" id="chatbot-icon" onclick="hideChatbotIcon()">
+                <img src="http://fusionflow2.local/wp-content/uploads/2023/12/chatbot.png" alt="Chatbot Icon">
             </div>
-            <div class="chatbox-content">
-                <div id="chat-messages"></div>
-                <div class="chat-input-container">
-                    <input type="text" id="chat-input" placeholder="Type your message..." name="message">
-                    <button onclick="sendMessage()">Send</button>
-                    <!-- Place these elements wherever you want the audio recorder to appear -->
-                    <button id="togglebtn" onclick="toggleRecord()">Start</button>           
+            <div class="chatbox" id="chatbox" style="display: none;">
+                <div class="chatbox-header">
+                    <span onclick="toggleChatbox()">Close</span>
                 </div>
-                <button onclick="playRecording()">Play</button>
-                    <audio id="audioPlayer" controls></audio>
-                    <video id="videoPlayer" controls></video>
+                <div class="chatbox-content">
+                    <div id="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <input type="text" id="chat-input" placeholder="Type your message...">
+                        <button onclick="sendMessage()">Send</button>
+                        <!-- Place these elements wherever you want the audio recorder to appear -->
+                        <button id="togglebtn" onclick="toggleRecord()">Start</button>  
+                        <!-- <img id="record" src="{{ url_for('static', filename='audio/mic128.png') }}" onclick="toggleRecording(this);">                  -->
+                    </div>
+                    <!-- <button onclick="playRecording()">Play</button>
+                        <audio id="audioPlayer" controls></audio>
+                        <video id="videoPlayer" controls></video> -->
+                </div>
             </div>
         </div>
-    </div>
+    </body>
     <style>
         .chatbot-container {
             position: fixed;
@@ -97,6 +107,21 @@ function add_chatbot_icon()
         }
     </style>
     <script>
+
+        // $(document).ready(function() {
+            const socket = io('http://localhost:5000');
+
+            // console.log(socket);
+            // Event handler for connection
+            socket.on('connect', function() {
+                console.log('Connected to the server');
+            });
+
+            // Event handler for disconnection
+            socket.on('disconnect', function() {
+                console.log('Disconnected from the server');
+            });
+
         function hideChatbotIcon() {
             var chatbotIcon = document.getElementById('chatbot-icon');
             chatbotIcon.style.display = 'none';
@@ -118,30 +143,100 @@ function add_chatbot_icon()
             }
         }
 
+        socket.on("response", (message)=>{
+            console.log(message);
+            
+
+            // get the number of intents
+            let num_intents = Object.keys(message).length;
+
+            if(num_intents == 1) {
+                let intent = Object.keys(message)[0];
+                let url = message[intent];
+
+                 // Create a SpeechSynthesisUtterance
+                const utterance = new SpeechSynthesisUtterance(intent);
+                // Select a voice
+                const voices = speechSynthesis.getVoices();
+                utterance.voice = voices[0]; // Choose a specific voice
+
+                // Speak the text
+                speechSynthesis.speak(utterance);
+
+                window.location.assign(url);
+            } else if(num_intents == 0) {
+                var chatInput = document.getElementById('chat-input');
+                var chatMessages = document.getElementById('chat-messages');
+                chatMessages.innerHTML += '<p>Alex: Couldn\'t find the page</p>';
+
+                // Create a SpeechSynthesisUtterance
+                 const utterance = new SpeechSynthesisUtterance("Couldn't find the page");
+                // Select a voice
+                const voices = speechSynthesis.getVoices();
+                utterance.voice = voices[0]; // Choose a specific voice
+
+                // Speak the text
+                speechSynthesis.speak(utterance);
+            } else {
+                var chatInput = document.getElementById('chat-input');
+                var chatMessages = document.getElementById('chat-messages');
+                chatMessages.innerHTML += '<p>Alex: Following are the pages found</p>';
+                let chatbot_response = "Pages I found are ";
+
+                for(let intent in message) {
+                    if(message.hasOwnProperty(intent)) {
+                        let url = message[intent];
+                        chatMessages.innerHTML += '<p><a href="' + url + '">' + intent + '</a></p>';
+                        chatbot_response += intent;
+                    }
+                }
+
+                // Create a SpeechSynthesisUtterance
+                const utterance = new SpeechSynthesisUtterance(chatbot_response);
+                // Select a voice
+                const voices = speechSynthesis.getVoices();
+                utterance.voice = voices[0]; // Choose a specific voice
+
+                // Speak the text
+                speechSynthesis.speak(utterance);
+            }
+            
+        });
+
         function sendMessage() {
             var chatInput = document.getElementById('chat-input');
             var message = chatInput.value;
-        
-            console.log("chat");
+
             if (message.trim() !== '') {
                 var chatMessages = document.getElementById('chat-messages');
                 chatMessages.innerHTML += '<p>User: ' + message + '</p>';
-                var conversation = JSON.parse(sessionStorage.getItem('chatbot_conversation')) || [];
-                conversation.push({message: message, sender: 'user'});
-                sessionStorage.setItem('chatbot_conversation', JSON.stringify(conversation));
+
+                // var conversation = JSON.parse(sessionStorage.getItem('chatbot_conversation')) || [];
+                // conversation.push({message: message, sender: 'user'});
+                // sessionStorage.setItem('chatbot_conversation', JSON.stringify(conversation));
+                
+                // chatMessages.innerHTML += '<a href="http://fusionflow2.local/resource-categories/communication-support/">Communication Supprot</a>'
+                // Using window.location.assign()
+                // window.location.assign("http://fusionflow2.local/resource-categories/communication-support/");
                 // Add logic here to process the user's message and get a response from the chatbot
                 // For now, let's simulate a simple response from the chatbot
+
+                // send message to backend through a websocket
+                socket.emit("message", message);
+
+                
+                // Save conversation history to localStorage
+                localStorage.setItem('chatHistory', JSON.stringify(message));
 
                 // Clear the input field
                 chatInput.value = '';
             }
         }
 
-        let mediaRecorder;
-        let audioChunks = [];
-        let videoChunks = [];
-        let isRecording = false;
         const toggleBtn = document.getElementById('togglebtn');
+        let isRecording = false;
+        let audioMediaRecorder, videoMediaRecorder;
+        const chunkSize = 1024 * 1024;
         
         function toggleRecord(){
             console.log("record toggled, is recording", isRecording);
@@ -149,56 +244,113 @@ function add_chatbot_icon()
                 stopRecording();
                 toggleBtn.innerText = "Start";
             } else {
-                startRecording();
+                startRecordingAudio();
+                startRecordingVideo();
                 toggleBtn.innerText = "Stop";
             }
         }
 
-        function startRecording() {
-            console.log("Recording Started")
-        navigator.mediaDevices.getUserMedia({ audio: true, video: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.ondataavailable = event => {
-                    if (event.data.size > 0) {
-                        audioChunks.push(event.data);
-                        videoChunks.push(event.data);
-                    }
-                };
+        function startRecordingAudio() {
+            console.log("Audio Recording Started")
+            navigator.mediaDevices.getUserMedia({audio: true})
+                .then(audiostream => {
+                    let audioChunks = [];
+                    audioMediaRecorder = new MediaRecorder(audiostream);
+                    audioMediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            audioChunks.push(event.data);
+                        }
+                    };
 
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    audioPlayer.src = audioUrl;
-                    const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
-                    const videoUrl = URL.createObjectURL(videoBlob);
-                    videoPlayer.src = videoUrl;
-                    isRecording = false;
-                };
+                    audioMediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        const totalChunks = Math.ceil(audioBlob.size / chunkSize);
+                        console.log("Total chunks", totalChunks, "out of ", audioBlob.size, "chunks");
 
-                mediaRecorder.start();
-                isRecording = true;
-                console.log(" is recording", isRecording);
-            })
-            .catch(error => {
-                console.error('Error accessing microphone:', error);
+                        for (let i = 0; i < totalChunks; i++) {
+                            const start = i * chunkSize;
+                            const end = Math.min(start + chunkSize, audioBlob.size);
+                            const chunk = audioBlob.slice(start, end);
+                            console.log("audio message")
+                            socket.emit("audio_message", chunk);
+                        }
+
+                        socket.on("audio_message", (audio_message)=>{
+                            console.log(audio_message)
+                        });
+                        isRecording = false;
+                    };
+
+                    audioMediaRecorder.start();
+                    isRecording = true;
+                    console.log(" is recording", isRecording);
+                })
+                .catch(error => {
+                    console.error('Error accessing microphone:', error);
             });
         }
-        function stopRecording() {
-            console.log("Recording Stopped")
-            if (mediaRecorder && mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-            }
+
+        function startRecordingVideo() {
+            console.log("Video Recording Started")
+            navigator.mediaDevices.getUserMedia({video: true})
+                .then(videostream => {
+                    let videoChunks = [];
+                    videoMediaRecorder = new MediaRecorder(videostream);
+                    videoMediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) {
+                            videoChunks.push(event.data);
+                        }
+                    };
+
+                    videoMediaRecorder.onstop = () => {
+                        const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+                        const totalChunks = Math.ceil(videoBlob.size / chunkSize);
+                        console.log("Total chunks", totalChunks, "out of ", videoBlob.size, "chunks");
+
+                        for (let i = 0; i < totalChunks; i++) {
+                            const start = i * chunkSize;
+                            const end = Math.min(start + chunkSize, videoBlob.size);
+                            const chunk = videoBlob.slice(start, end);
+                            console.log("video message")
+                            socket.emit("video_message", chunk);
+                        }  
+
+                        socket.on("video_message", (video_message)=>{
+                            console.log(video_message)
+                        });                
+
+                        // const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+                        // const videoUrl = URL.createObjectURL(videoBlob);
+                        // videoPlayer.src = videoUrl;
+                        isRecording = false;
+                    };
+
+                    videoMediaRecorder.start();
+                    isRecording = true;
+                    console.log(" is recording", isRecording);
+                })
+                .catch(error => {
+                    console.error('Error accessing microphone:', error);
+            });
+
         }
 
-        function playRecording() {
-            if (audioPlayer.src) {
-                audioPlayer.play();
-            }
-            if (videoPlayer.src) {
-                videoPlayer.play();
-            }
+    function stopRecording() {
+        console.log("Recording Stopped")
+        if (audioMediaRecorder && audioMediaRecorder.state === 'recording' && videoMediaRecorder && videoMediaRecorder.state === 'recording') {
+            audioMediaRecorder.stop();
+            videoMediaRecorder.stop();
         }
+    }
+
+    function playRecording() {
+        if (audioPlayer.src) {
+            audioPlayer.play();
+        }
+        if (videoPlayer.src) {
+            videoPlayer.play();
+        }
+    }
     </script>
 <?php
 }
