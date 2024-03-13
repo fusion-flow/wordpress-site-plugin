@@ -38,9 +38,9 @@ function add_chatbot_icon()
                         <button id="togglebtn" onclick="toggleRecord()">Start</button>  
                         <!-- <img id="record" src="{{ url_for('static', filename='audio/mic128.png') }}" onclick="toggleRecording(this);">                  -->
                     </div>
-                    <!-- <button onclick="playRecording()">Play</button>
-                        <audio id="audioPlayer" controls></audio>
-                        <video id="videoPlayer" controls></video> -->
+                    <!-- <button onclick="playRecording()">Play</button> -->
+                        <!-- <audio id="audioPlayer", display="none" controls></audio> -->
+                        <video id="videoPlayer" controls autoplay></video>
                 </div>
             </div>
         </div>
@@ -105,6 +105,11 @@ function add_chatbot_icon()
             width: 70px;
             height: 70px;
         }
+
+        #videoPlayer{
+            display:none;
+        }
+
     </style>
     <script>
 
@@ -290,56 +295,83 @@ function add_chatbot_icon()
             });
         }
 
+        // function startRecordingVideo() {
+        //     console.log("Video Recording Started")
+        //     navigator.mediaDevices.getUserMedia({video: true})
+        //         .then(videostream => {
+        //             let videoChunks = [];
+        //             videoMediaRecorder = new MediaRecorder(videostream);
+        //             videoMediaRecorder.ondataavailable = event => {
+        //                 if (event.data.size > 0) {
+        //                     videoChunks.push(event.data);
+        //                 }
+        //             };
+
+        //             videoMediaRecorder.onstop = () => {
+        //                 const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+        //                 const totalChunks = Math.ceil(videoBlob.size / chunkSize);
+        //                 console.log("Total chunks", totalChunks, "out of ", videoBlob.size, "chunks");
+
+        //                 for (let i = 0; i < totalChunks; i++) {
+        //                     const start = i * chunkSize;
+        //                     const end = Math.min(start + chunkSize, videoBlob.size);
+        //                     const chunk = videoBlob.slice(start, end);
+        //                     console.log("video message")
+        //                     socket.emit("video_message", chunk);
+        //                 }  
+
+        //                 socket.on("video_message", (video_message)=>{
+        //                     console.log(video_message)
+        //                 });                
+
+        //                 // const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
+        //                 // const videoUrl = URL.createObjectURL(videoBlob);
+        //                 // videoPlayer.src = videoUrl;
+        //                 isRecording = false;
+        //             };
+
+        //             videoMediaRecorder.start();
+        //             isRecording = true;
+        //             console.log(" is recording", isRecording);
+        //         })
+        //         .catch(error => {
+        //             console.error('Error accessing microphone:', error);
+        //     });
+
+        // }
+
+        var video = document.getElementById("videoPlayer");
+
         function startRecordingVideo() {
             console.log("Video Recording Started")
             navigator.mediaDevices.getUserMedia({video: true})
                 .then(videostream => {
-                    let videoChunks = [];
-                    videoMediaRecorder = new MediaRecorder(videostream);
-                    videoMediaRecorder.ondataavailable = event => {
-                        if (event.data.size > 0) {
-                            videoChunks.push(event.data);
-                        }
-                    };
-
-                    videoMediaRecorder.onstop = () => {
-                        const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
-                        const totalChunks = Math.ceil(videoBlob.size / chunkSize);
-                        console.log("Total chunks", totalChunks, "out of ", videoBlob.size, "chunks");
-
-                        for (let i = 0; i < totalChunks; i++) {
-                            const start = i * chunkSize;
-                            const end = Math.min(start + chunkSize, videoBlob.size);
-                            const chunk = videoBlob.slice(start, end);
+                    video.srcObject = videostream;
+                    captureInterval = setInterval(() => {
+                        const cnv = document.createElement("canvas");
+                        cnv.width = video.videoWidth;
+                        cnv.height = video.videoHeight;
+                        ctx = cnv.getContext('2d');
+                        ctx.drawImage(video,0,0, cnv.width, cnv.height);
+                        cnv.toBlob((blob) => {
                             console.log("video message")
-                            socket.emit("video_message", chunk);
-                        }  
-
-                        socket.on("video_message", (video_message)=>{
-                            console.log(video_message)
-                        });                
-
-                        // const videoBlob = new Blob(videoChunks, { type: 'video/webm' });
-                        // const videoUrl = URL.createObjectURL(videoBlob);
-                        // videoPlayer.src = videoUrl;
-                        isRecording = false;
-                    };
-
-                    videoMediaRecorder.start();
-                    isRecording = true;
-                    console.log(" is recording", isRecording);
+                            socket.emit("video_message", blob);
+                        }, 'image/jpeg');
+                    }, 3000);
                 })
                 .catch(error => {
-                    console.error('Error accessing microphone:', error);
-            });
-
+                    console.error('Error accessing webcamera:', error);
+            });            
         }
+    
 
     function stopRecording() {
         console.log("Recording Stopped")
-        if (audioMediaRecorder && audioMediaRecorder.state === 'recording' && videoMediaRecorder && videoMediaRecorder.state === 'recording') {
+        // if (audioMediaRecorder && audioMediaRecorder.state === 'recording' && videoMediaRecorder && videoMediaRecorder.state === 'recording') {
+        if (audioMediaRecorder && audioMediaRecorder.state === 'recording') {
             audioMediaRecorder.stop();
-            videoMediaRecorder.stop();
+            clearInterval(captureInterval);
+            // videoMediaRecorder.stop();
         }
     }
 
