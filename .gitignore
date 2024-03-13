@@ -1,12 +1,14 @@
 wp-admin
-themes
-uploads
-app/public/wp-content/index.php
 wp-includes
+
+# themes is installed in the app/public/wp-content directory
+themes
+
+app/public/wp-content/index.php
+
+# following files resides in the app/public directory
 .htaccess
 license.txt
-conf
-logs
 local-xdebuginfo.php
 readme.html
 wp-activate.php
@@ -23,4 +25,7 @@ wp-settings.php
 wp-signup.php
 wp-trackback.php
 xmlrpc.php
-app/sql/local.sql
+
+# no need to replace the following files
+conf
+logs
