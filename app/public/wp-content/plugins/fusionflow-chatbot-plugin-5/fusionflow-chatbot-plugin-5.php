@@ -35,7 +35,7 @@ function add_chatbot_icon()
                         <input type="text" id="chat-input" placeholder="Type your message...">
                         <button onclick="sendMessage()">Send</button>
                         <!-- Place these elements wherever you want the audio recorder to appear -->
-                        <button id="togglebtn" onclick="toggleRecord()">Start</button>  
+                        <button id="togglebtn" onclick="toggleRecord()">Record</button>  
                         <!-- <img id="record" src="{{ url_for('static', filename='audio/mic128.png') }}" onclick="toggleRecording(this);">                  -->
                     </div>
                     <!-- <button onclick="playRecording()">Play</button> -->
@@ -127,7 +127,11 @@ function add_chatbot_icon()
                 console.log('Disconnected from the server');
             });
 
+        // retrieve data in sessionStorage
+        var existingData = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
+
         function hideChatbotIcon() {
+            loadMessages();
             var chatbotIcon = document.getElementById('chatbot-icon');
             chatbotIcon.style.display = 'none';
 
@@ -136,6 +140,7 @@ function add_chatbot_icon()
         }
 
         function toggleChatbox() {
+            loadMessages();
             var chatbox = document.getElementById('chatbox');
             var chatbotIcon = document.getElementById('chatbot-icon');
 
@@ -159,7 +164,12 @@ function add_chatbot_icon()
                 let intent = Object.keys(message)[0];
                 let url = message[intent];
 
-                 // Create a SpeechSynthesisUtterance
+                //append the message to the session Storage
+                existingData.push("Alex :", intent);
+                // Save conversation history to session Storage
+                sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
+
+                // Create a SpeechSynthesisUtterance
                 const utterance = new SpeechSynthesisUtterance(intent);
                 // Select a voice
                 const voices = speechSynthesis.getVoices();
@@ -174,6 +184,11 @@ function add_chatbot_icon()
                 var chatMessages = document.getElementById('chat-messages');
                 chatMessages.innerHTML += '<p>Alex: Couldn\'t find the page</p>';
 
+                //append the message to the session Storage
+                existingData.push("Alex : couldn't find the page");
+                // Save conversation history to session Storage
+                sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
+
                 // Create a SpeechSynthesisUtterance
                  const utterance = new SpeechSynthesisUtterance("Couldn't find the page");
                 // Select a voice
@@ -186,6 +201,7 @@ function add_chatbot_icon()
                 var chatInput = document.getElementById('chat-input');
                 var chatMessages = document.getElementById('chat-messages');
                 chatMessages.innerHTML += '<p>Alex: Following are the pages found</p>';
+
                 let chatbot_response = "Pages I found are ";
 
                 for(let intent in message) {
@@ -195,6 +211,10 @@ function add_chatbot_icon()
                         chatbot_response += intent;
                     }
                 }
+
+                existingData.push("Alex :", chatMessages);
+                // Save conversation history to session Storage
+                sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
 
                 // Create a SpeechSynthesisUtterance
                 const utterance = new SpeechSynthesisUtterance(chatbot_response);
@@ -208,33 +228,48 @@ function add_chatbot_icon()
             
         });
 
+        function loadMessages(){
+            var chatMessages = document.getElementById('chat-messages');
+            var conversation = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
+            conversation.forEach(function(message){
+                chatMessages.innerHTML += '<p>' + message + '</p>';
+            });
+        }
+        
+        
+
         function sendMessage() {
-            var chatInput = document.getElementById('chat-input');
-            var message = chatInput.value;
+            if (isRecording) {
+                stopRecording();
+                toggleRecord();
+            } else {
+                var chatInput = document.getElementById('chat-input');
+                var message = chatInput.value;
+                if (message.trim() !== '') {
+                    var chatMessages = document.getElementById('chat-messages');
+                    chatMessages.innerHTML += '<p>User: ' + message + '</p>';
 
-            if (message.trim() !== '') {
-                var chatMessages = document.getElementById('chat-messages');
-                chatMessages.innerHTML += '<p>User: ' + message + '</p>';
+                    // var conversation = JSON.parse(sessionStorage.getItem('chatbot_conversation')) || [];
+                    // conversation.push({message: message, sender: 'user'});
+                    // sessionStorage.setItem('chatbot_conversation', JSON.stringify(conversation));
+                    
+                    // chatMessages.innerHTML += '<a href="http://fusionflow2.local/resource-categories/communication-support/">Communication Supprot</a>'
+                    // Using window.location.assign()
+                    // window.location.assign("http://fusionflow2.local/resource-categories/communication-support/");
+                    // Add logic here to process the user's message and get a response from the chatbot
+                    // For now, let's simulate a simple response from the chatbot
 
-                // var conversation = JSON.parse(sessionStorage.getItem('chatbot_conversation')) || [];
-                // conversation.push({message: message, sender: 'user'});
-                // sessionStorage.setItem('chatbot_conversation', JSON.stringify(conversation));
-                
-                // chatMessages.innerHTML += '<a href="http://fusionflow2.local/resource-categories/communication-support/">Communication Supprot</a>'
-                // Using window.location.assign()
-                // window.location.assign("http://fusionflow2.local/resource-categories/communication-support/");
-                // Add logic here to process the user's message and get a response from the chatbot
-                // For now, let's simulate a simple response from the chatbot
+                    // send message to backend through a websocket
+                    socket.emit("message", message);
 
-                // send message to backend through a websocket
-                socket.emit("message", message);
+                    //append the message to the session Storage
+                    existingData.push("User :"+ message);
+                    // Save conversation history to session Storage
+                    sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
 
-                
-                // Save conversation history to localStorage
-                localStorage.setItem('chatHistory', JSON.stringify(message));
-
-                // Clear the input field
-                chatInput.value = '';
+                    // Clear the input field
+                    chatInput.value = '';
+                }
             }
         }
 
@@ -247,11 +282,13 @@ function add_chatbot_icon()
             console.log("record toggled, is recording", isRecording);
             if (isRecording) {
                 stopRecording();
-                toggleBtn.innerText = "Start";
+                toggleBtn.style.visibility = "visible";
+                toggleBtn.innerText = "Record";
             } else {
                 startRecordingAudio();
                 startRecordingVideo();
-                toggleBtn.innerText = "Stop";
+                toggleBtn.style.visibility = "hidden";
+                // toggleBtn.innerText = "Stop";
             }
         }
 
@@ -269,20 +306,27 @@ function add_chatbot_icon()
 
                     audioMediaRecorder.onstop = () => {
                         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                        const totalChunks = Math.ceil(audioBlob.size / chunkSize);
-                        console.log("Total chunks", totalChunks, "out of ", audioBlob.size, "chunks");
+                        var chatInput = document.getElementById('chat-input');
+                        var message = chatInput.value;
+                        var chatMessages = document.getElementById('chat-messages');
+                        chatMessages.innerHTML += '<p>User: ' + message + '</p>';
+                        // socket.emit("message", message);
+                        json_ = {"message": message, "audio": audioBlob}
+                        socket.emit("audio_message", json_);
+                        // const totalChunks = Math.ceil(audioBlob.size / chunkSize);
+                        // console.log("Total chunks", totalChunks, "out of ", audioBlob.size, "chunks");
 
-                        for (let i = 0; i < totalChunks; i++) {
-                            const start = i * chunkSize;
-                            const end = Math.min(start + chunkSize, audioBlob.size);
-                            const chunk = audioBlob.slice(start, end);
-                            console.log("audio message")
-                            socket.emit("audio_message", chunk);
-                        }
+                        // for (let i = 0; i < totalChunks; i++) {
+                        //     const start = i * chunkSize;
+                        //     const end = Math.min(start + chunkSize, audioBlob.size);
+                        //     const chunk = audioBlob.slice(start, end);
+                        //     console.log("audio message")
+                        //     
+                        // }
 
-                        socket.on("audio_message", (audio_message)=>{
-                            console.log(audio_message)
-                        });
+                        // socket.on("audio_message", (audio_message)=>{
+                        //     console.log(audio_message)
+                        // });
                         isRecording = false;
                     };
 
@@ -371,7 +415,6 @@ function add_chatbot_icon()
         if (audioMediaRecorder && audioMediaRecorder.state === 'recording') {
             audioMediaRecorder.stop();
             clearInterval(captureInterval);
-            // videoMediaRecorder.stop();
         }
     }
 
