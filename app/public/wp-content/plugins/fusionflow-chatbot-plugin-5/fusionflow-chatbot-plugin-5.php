@@ -154,15 +154,27 @@ function add_chatbot_icon()
         }
 
         socket.on("response", (message)=>{
-            console.log(message);
+
+            console.log(message.state)
+
+            if (message.state == "navigation_list"){
+                startRecordingVideo().then(({ videostream, captureInterval }) => {
+                // Set a timeout to stop the recording after 10 seconds (10000 milliseconds)
+                    setTimeout(() => {
+                        stopRecordingVideo(videostream, captureInterval);
+                    }, 60000);
+                });
+            }
+
+            var intents = message.intents;
             
 
             // get the number of intents
-            let num_intents = Object.keys(message).length;
+            let num_intents = Object.keys(intents).length;
 
             if(num_intents == 1) {
-                let intent = Object.keys(message)[0];
-                let url = message[intent];
+                let intent = Object.keys(intents)[0];
+                let url = intents[intent];
 
                 //append the message to the session Storage
                 existingData.push("Alex :", intent);
@@ -277,6 +289,8 @@ function add_chatbot_icon()
         let isRecording = false;
         let audioMediaRecorder, videoMediaRecorder;
         const chunkSize = 1024 * 1024;
+
+        // function recordVideo() {}
         
         function toggleRecord(){
             console.log("record toggled, is recording", isRecording);
@@ -386,28 +400,45 @@ function add_chatbot_icon()
 
         var video = document.getElementById("videoPlayer");
 
+        var captureInterval;
+
         function startRecordingVideo() {
             console.log("Video Recording Started")
-            navigator.mediaDevices.getUserMedia({video: true})
+            return navigator.mediaDevices.getUserMedia({ video: true })
                 .then(videostream => {
+                    // Assign the video stream to a video element
+                    const video = document.createElement('video');
                     video.srcObject = videostream;
-                    captureInterval = setInterval(() => {
+
+                    const captureInterval = setInterval(() => {
                         const cnv = document.createElement("canvas");
                         cnv.width = video.videoWidth;
                         cnv.height = video.videoHeight;
-                        ctx = cnv.getContext('2d');
-                        ctx.drawImage(video,0,0, cnv.width, cnv.height);
+                        const ctx = cnv.getContext('2d');
+                        ctx.drawImage(video, 0, 0, cnv.width, cnv.height);
                         cnv.toBlob((blob) => {
-                            console.log("video message")
+                            console.log("video message");
                             socket.emit("video_message", blob);
                         }, 'image/jpeg');
                     }, 3000);
+
+                    return { videostream, captureInterval }; // Return the stream and interval ID
                 })
                 .catch(error => {
-                    console.error('Error accessing webcamera:', error);
-            });            
+                    console.error('Error accessing web camera:', error);
+                });         
         }
     
+        function stopRecordingVideo(videostream, captureInterval) {
+            // Clear the capture interval
+            clearInterval(captureInterval);
+
+            // Stop all tracks on the video stream
+            videostream.getTracks().forEach(track => track.stop());
+
+            console.log("Video Recording Stopped");
+        }
+            
 
     function stopRecording() {
         console.log("Recording Stopped")
