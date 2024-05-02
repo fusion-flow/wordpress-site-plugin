@@ -162,8 +162,12 @@ function add_chatbot_icon()
                 // Set a timeout to stop the recording after 10 seconds (10000 milliseconds)
                     setTimeout(() => {
                         stopRecordingVideo(videostream, captureInterval);
-                    }, 60000);
+                    }, 8000);
                 });
+            }
+
+            if (message.state == "normal" && isRecordingVideo){
+                stopRecordingVideo(globalStream, captureInterval);
             }
 
             var intents = message.intents;
@@ -401,16 +405,20 @@ function add_chatbot_icon()
         var video = document.getElementById("videoPlayer");
 
         var captureInterval;
+        var isRecordingVideo = false;
+        var globalStream;
 
         function startRecordingVideo() {
             console.log("Video Recording Started")
+            isRecordingVideo = true;
             return navigator.mediaDevices.getUserMedia({ video: true })
                 .then(videostream => {
                     // Assign the video stream to a video element
                     const video = document.createElement('video');
                     video.srcObject = videostream;
+                    globalStream = videostream;
 
-                    const captureInterval = setInterval(() => {
+                    captureInterval = setInterval(() => {
                         const cnv = document.createElement("canvas");
                         cnv.width = video.videoWidth;
                         cnv.height = video.videoHeight;
@@ -422,7 +430,7 @@ function add_chatbot_icon()
                         }, 'image/jpeg');
                     }, 3000);
 
-                    return { videostream, captureInterval }; // Return the stream and interval ID
+                    return { videostream, captureInterval }; 
                 })
                 .catch(error => {
                     console.error('Error accessing web camera:', error);
@@ -430,15 +438,25 @@ function add_chatbot_icon()
         }
     
         function stopRecordingVideo(videostream, captureInterval) {
+            if(!isRecordingVideo){
+                console.log("Already stopped")
+                return
+            }
             // Clear the capture interval
             clearInterval(captureInterval);
 
             // Stop all tracks on the video stream
-            videostream.getTracks().forEach(track => track.stop());
+            const tracks = videostream.getTracks();
+            if (tracks && tracks.length > 0) {
+                console.log("tracks", tracks)
+                tracks.forEach(track => track.stop());
+                console.log("Video Recording Stopped");
+            } else {
+                console.warn("No tracks found in the video stream.");
+            }
 
-            console.log("Video Recording Stopped");
+            isRecordingVideo = false;
         }
-            
 
     function stopRecording() {
         console.log("Recording Stopped")
