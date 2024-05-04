@@ -155,9 +155,15 @@ function add_chatbot_icon()
 
         socket.on("response", (message)=>{
 
-            console.log(message.state)
+            chatbot_state = message.state
+            response = message.response
+            intent_url_mapping = message.intent_url_mapping
 
-            if (message.state == "navigation_list"){
+            console.log("chatbot_state", chatbot_state)
+            console.log("response ", response)
+            console.log("intent_url_mapping", intent_url_mapping)
+
+            if (chatbot_state == "navigation_list"){
                 startRecordingVideo().then(({ videostream, captureInterval }) => {
                 // Set a timeout to stop the recording after 10 seconds (10000 milliseconds)
                     setTimeout(() => {
@@ -166,19 +172,17 @@ function add_chatbot_icon()
                 });
             }
 
-            if (message.state == "normal" && isRecordingVideo){
+            if (chatbot_state != "navigation_list" && isRecordingVideo){
                 stopRecordingVideo(globalStream, captureInterval);
             }
 
-            var intents = message.intents;
-            
-
+        
             // get the number of intents
-            let num_intents = Object.keys(intents).length;
+            // let num_intents = Object.keys(intents).length;
 
-            if(num_intents == 1) {
-                let intent = Object.keys(intents)[0];
-                let url = intents[intent];
+            if(chatbot_state == "direct_navigation") {
+                let intent = Object.keys(intent_url_mapping)[0];
+                let url = intent_url_mapping[intent];
 
                 //append the message to the session Storage
                 existingData.push("Alex :", intent);
@@ -191,40 +195,26 @@ function add_chatbot_icon()
                 const voices = speechSynthesis.getVoices();
                 utterance.voice = voices[0]; // Choose a specific voice
 
+                // Set the rate to slow down the speech
+                utterance.rate = 0.5; // Adjust this value to slow down further if needed
+
                 // Speak the text
                 speechSynthesis.speak(utterance);
 
                 window.location.assign(url);
-            } else if(num_intents == 0) {
+
+            } else if(chatbot_state == "navigation_list"){
                 var chatInput = document.getElementById('chat-input');
                 var chatMessages = document.getElementById('chat-messages');
-                chatMessages.innerHTML += '<p>Alex: Couldn\'t find the page</p>';
-
-                //append the message to the session Storage
-                existingData.push("Alex : couldn't find the page");
-                // Save conversation history to session Storage
-                sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
-
-                // Create a SpeechSynthesisUtterance
-                 const utterance = new SpeechSynthesisUtterance("Couldn't find the page");
-                // Select a voice
-                const voices = speechSynthesis.getVoices();
-                utterance.voice = voices[0]; // Choose a specific voice
-
-                // Speak the text
-                speechSynthesis.speak(utterance);
-            } else {
-                var chatInput = document.getElementById('chat-input');
-                var chatMessages = document.getElementById('chat-messages');
-                chatMessages.innerHTML += '<p>Alex: Following are the pages found</p>';
+                chatMessages.innerHTML += '<p>Alex: ' + response + '</p>';
 
                 let chatbot_response = "Pages I found are ";
 
-                for(let intent in message) {
-                    if(message.hasOwnProperty(intent)) {
-                        let url = message[intent];
+                for(let intent in intent_url_mapping) {
+                    if(intent_url_mapping.hasOwnProperty(intent)) {
+                        let url = intent_url_mapping[intent];
                         chatMessages.innerHTML += '<p><a href="' + url + '">' + intent + '</a></p>';
-                        chatbot_response += intent;
+                        chatbot_response += intent + ",";
                     }
                 }
 
@@ -237,6 +227,31 @@ function add_chatbot_icon()
                 // Select a voice
                 const voices = speechSynthesis.getVoices();
                 utterance.voice = voices[0]; // Choose a specific voice
+
+                // Set the rate to slow down the speech
+                utterance.rate = 0.5; // Adjust this value to slow down further if needed
+
+                // Speak the text
+                speechSynthesis.speak(utterance);
+            } else {
+                var chatInput = document.getElementById('chat-input');
+                var chatMessages = document.getElementById('chat-messages');
+                let chatbot_response = "Alex : " + response;
+                chatMessages.innerHTML += '<p>' + chatbot_response + '</p>';
+
+                //append the message to the session Storage
+                existingData.push(chatbot_response);
+                // Save conversation history to session Storage
+                sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
+
+                // Create a SpeechSynthesisUtterance
+                 const utterance = new SpeechSynthesisUtterance(response);
+                // Select a voice
+                const voices = speechSynthesis.getVoices();
+                utterance.voice = voices[0]; // Choose a specific voice
+
+                // Set the rate to slow down the speech
+                utterance.rate = 0.5; // Adjust this value to slow down further if needed
 
                 // Speak the text
                 speechSynthesis.speak(utterance);
