@@ -312,17 +312,19 @@ function add_chatbot_icon()
         // function recordVideo() {}
         
         function toggleRecord(){
-            console.log("record toggled, is recording", isRecording);
             if (isRecording) {
-                stopRecording();
+                isRecording = false;
+                // stopRecording();
                 toggleBtn.style.visibility = "visible";
                 toggleBtn.innerText = "Record";
             } else {
+                isRecording = true;
                 startRecordingAudio();
-                startRecordingVideo();
-                toggleBtn.style.visibility = "hidden";
-                // toggleBtn.innerText = "Stop";
+                // startRecordingVideo();
+                // toggleBtn.style.visibility = "hidden";
+                toggleBtn.innerText = "Cancel";
             }
+            console.log("record toggled, is recording", isRecording);
         }
 
         function startRecordingAudio() {
@@ -338,6 +340,13 @@ function add_chatbot_icon()
                     };
 
                     audioMediaRecorder.onstop = () => {
+                        // if (toggleBtn.innerText == "Record"){
+                        //     console.log(toggleBtn.innerText)
+                        //     isRecording = false;
+                        //     console.log("audio sending cancelled")
+                        //     return;
+                        // }
+                        // console.log(toggleBtn.innerText)
                         const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
                         var chatInput = document.getElementById('chat-input');
                         var message = chatInput.value;
@@ -345,6 +354,7 @@ function add_chatbot_icon()
                         chatMessages.innerHTML += '<p>User: ' + message + '</p>';
                         // socket.emit("message", message);
                         json_ = {"message": message, "audio": audioBlob}
+                        console.log("Audio message sent")
                         socket.emit("audio_message", json_);
                         // const totalChunks = Math.ceil(audioBlob.size / chunkSize);
                         // console.log("Total chunks", totalChunks, "out of ", audioBlob.size, "chunks");
@@ -364,7 +374,7 @@ function add_chatbot_icon()
                     };
 
                     audioMediaRecorder.start();
-                    isRecording = true;
+                    
                     console.log(" is recording", isRecording);
                 })
                 .catch(error => {
