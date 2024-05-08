@@ -112,7 +112,7 @@ function add_chatbot_icon()
             flex-direction: column;
             margin-bottom: 10px;
             overflow-y: auto;
-            max-height: 400px; /* Increase the value to make the chatbot height more */
+            max-height: 450px; /* Increase the value to make the chatbot height more */
             padding: 10px;
         }
 
