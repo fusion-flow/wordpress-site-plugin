@@ -27,7 +27,7 @@ function add_chatbot_icon()
             </div>
             <div class="chatbox" id="chatbox" style="display: none;">
                 <div class="chatbox-header">
-                    <span onclick="toggleChatbox()">Close</span>
+                    <span onclick="toggleChatbox()" style="cursor: pointer; font-size: 24px;">&times;</span>
                 </div>
                 <div class="chatbox-content">
                     <div id="chat-messages"></div>
@@ -63,7 +63,7 @@ function add_chatbot_icon()
             border: 1px solid #ccc;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin-top: 10px;
-            max-width: 300px;
+            width: 350px;
             /* Set a maximum width for the chatbox */
         }
 
@@ -84,11 +84,23 @@ function add_chatbot_icon()
         }
 
         #chat-messages {
-            margin-bottom: 10px;
+            /* margin-bottom: 10px;
             padding: 10px;
             overflow-y: auto;
             max-height: 200px;
-            /* Set a maximum height for the chat messages */
+            Set a maximum height for the chat messages */
+            /* display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            overflow-y: auto;
+            max-height: 200px;
+            padding: 10px; */
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 10px;
+            overflow-y: auto;
+            max-height: 400px; /* Increase the value to make the chatbot height more */
+            padding: 10px;
         }
 
         .chat-input-container {
@@ -108,6 +120,27 @@ function add_chatbot_icon()
 
         #videoPlayer{
             display:none;
+        }
+
+
+        .user-message {
+            align-self: flex-end;
+            background-color: #dcf8c6;
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            margin-top: 10px;
+        }
+
+        .chatbot-message {
+            align-self: flex-start;
+            background-color: #e5e5ea;
+            border-radius: 10px;
+            padding: 8px 12px;
+            margin-bottom: 10px;
+            max-width: 70%;
+            margin-top: 10px;
         }
 
     </style>
@@ -185,7 +218,7 @@ function add_chatbot_icon()
                 let url = intent_url_mapping[intent];
 
                 //append the message to the session Storage
-                existingData.push("Alex :", intent);
+                existingData.push("Flow :", intent);
                 // Save conversation history to session Storage
                 sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
 
@@ -204,21 +237,38 @@ function add_chatbot_icon()
                 window.location.assign(url);
 
             } else if(chatbot_state == "navigation_list"){
-                var chatInput = document.getElementById('chat-input');
-                var chatMessages = document.getElementById('chat-messages');
-                chatMessages.innerHTML += '<p>Alex: ' + response + '</p>';
 
-                let chatbot_response = "Pages I found are ";
+                var chatMessages = document.getElementById('chat-messages');
+                var chatbotMessageBubble = document.createElement('div');
+                // console.log("chat", chatbot_response);
+                // chatbotMessageBubble.textContent = chatbot_response;
+                chatbotMessageBubble.classList.add('chatbot-message');
+                chatMessages.appendChild(chatbotMessageBubble);
+                
+
+                // var chatInput = document.getElementById('chat-input');
+                // var chatMessages = document.getElementById('chat-messages');
+                // chatMessages.innerHTML += '<p>Alex: ' + response + '</p>';
+
+                let chatbot_response = "Pages I found are </br>";
+                let temp = "Pages I found are </br>"
 
                 for(let intent in intent_url_mapping) {
                     if(intent_url_mapping.hasOwnProperty(intent)) {
                         let url = intent_url_mapping[intent];
-                        chatMessages.innerHTML += '<p><a href="' + url + '">' + intent + '</a></p>';
-                        chatbot_response += intent + ",";
+                        const intentLink = '<a href="' + url + '">' + intent + '</a>';
+                        chatbot_response += intentLink + "</br>";
+
+                        // const intentLinkBubble = document.createElement('div');
+                        // intentLinkBubble.innerHTML = '<p>' + intentLink + '</p>';
+                        // intentLinkBubble.classList.add('chatbot-message');
+                        // chatMessages.appendChild(intentLinkBubble);
                     }
                 }
 
-                existingData.push("Alex :", chatMessages);
+                chatbotMessageBubble.innerHTML = chatbot_response;
+
+                existingData.push("Flow:" + chatbotMessageBubble.innerHTML);
                 // Save conversation history to session Storage
                 sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
 
@@ -234,13 +284,14 @@ function add_chatbot_icon()
                 // Speak the text
                 speechSynthesis.speak(utterance);
             } else {
-                var chatInput = document.getElementById('chat-input');
                 var chatMessages = document.getElementById('chat-messages');
-                let chatbot_response = "Alex : " + response;
-                chatMessages.innerHTML += '<p>' + chatbot_response + '</p>';
+                var chatbotMessageBubble = document.createElement('div');
+                chatbotMessageBubble.textContent = response;
+                chatbotMessageBubble.classList.add('chatbot-message');
+                chatMessages.appendChild(chatbotMessageBubble);
 
                 //append the message to the session Storage
-                existingData.push(chatbot_response);
+                existingData.push("Flow:" + chatbotMessageBubble.textContent);
                 // Save conversation history to session Storage
                 sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
 
@@ -262,11 +313,33 @@ function add_chatbot_icon()
         function loadMessages(){
             var chatMessages = document.getElementById('chat-messages');
             var conversation = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
-            conversation.forEach(function(message){
-                chatMessages.innerHTML += '<p>' + message + '</p>';
+            conversation.forEach(function(message) {
+                if (typeof message === 'string'){
+                    console.log("message load", message);
+                    var messageParts = message.split(':');
+                    var sender = messageParts[0].trim();
+                    var content = messageParts.slice(1).join(':').trim();
+
+                    var messageBubble = document.createElement('div');
+                    messageBubble.innerHTML= '<p>' + content + '</p>';
+
+                    if (sender === 'Flow') {
+                        messageBubble.classList.add('chatbot-message');
+                    } else {
+                        messageBubble.classList.add('user-message');
+                    }
+
+                    chatMessages.appendChild(messageBubble);
+                }
             });
         }
-        
+        // function loadMessages(){
+        //     var chatMessages = document.getElementById('chat-messages');
+        //     var conversation = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
+        //     conversation.forEach(function(message){
+        //         chatMessages.innerHTML += '<p>' + message + '</p>';
+        //     });
+        // }
         
 
         function sendMessage() {
@@ -275,10 +348,17 @@ function add_chatbot_icon()
                 toggleRecord();
             } else {
                 var chatInput = document.getElementById('chat-input');
-                var message = chatInput.value;
-                if (message.trim() !== '') {
-                    var chatMessages = document.getElementById('chat-messages');
-                    chatMessages.innerHTML += '<p>User: ' + message + '</p>';
+                var chatMessages = document.getElementById('chat-messages');
+                var userMessage = chatInput.value.trim();
+                console.log("User message", userMessage);
+
+
+                if (userMessage) {
+                    console.log("inside");
+                    var userMessageBubble = document.createElement('div');
+                    userMessageBubble.textContent = userMessage;
+                    userMessageBubble.classList.add('user-message');
+                    chatMessages.appendChild(userMessageBubble);
 
                     // var conversation = JSON.parse(sessionStorage.getItem('chatbot_conversation')) || [];
                     // conversation.push({message: message, sender: 'user'});
@@ -291,10 +371,10 @@ function add_chatbot_icon()
                     // For now, let's simulate a simple response from the chatbot
 
                     // send message to backend through a websocket
-                    socket.emit("message", message);
+                    socket.emit("message", userMessage);
 
                     //append the message to the session Storage
-                    existingData.push("User :"+ message);
+                    existingData.push("User :"+ userMessage);
                     // Save conversation history to session Storage
                     sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
 
