@@ -27,6 +27,7 @@ function add_chatbot_icon()
             </div>
             <div class="chatbox" id="chatbox" style="display: none;">
                 <div class="chatbox-header">
+                    <span>Flow</span>
                     <span onclick="toggleChatbox()" style="cursor: pointer; font-size: 24px;">&times;</span>
                 </div>
                 <div class="chatbox-content">
@@ -63,21 +64,33 @@ function add_chatbot_icon()
             border: 1px solid #ccc;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin-top: 10px;
-            width: 350px;
+            width: 400px;
             /* Set a maximum width for the chatbox */
+        }
+
+        /* .chatbox-header {
+            background-color: #f1f1f1;
+            padding: 10px;
+            display: flex;
+            justify-content: flex-end;
+        } */
+
+        .chatbox-header span {
+            cursor: pointer;
         }
 
         .chatbox-header {
             background-color: #f1f1f1;
             padding: 10px;
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between; /* Add this line */
+            align-items: center; /* Add this line */
         }
 
-        .chatbox-header span {
-            cursor: pointer;
+        .chatbox-header span:first-child {
+            font-weight: bold; /* Add this line */
+            font-size: 18px; /* Add this line */
         }
-
         .chatbox-content {
             display: flex;
             flex-direction: column;
@@ -107,11 +120,37 @@ function add_chatbot_icon()
             display: flex;
             padding: 10px;
         }
-
+       
         #chat-input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            width: 70%;
+            box-sizing: border-box;
+        }
+
+        /* Style the Send and Record buttons */
+        .chat-input-container button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 8px;
+        }
+
+        /* Add hover effect to the buttons */
+        .chat-input-container button:hover {
+            background-color: #3e8e41;
+        }
+
+        /* #chat-input {
             flex: 1;
             margin-right: 10px;
-        }
+        } */
 
         .chatbot-icon img {
             width: 70px;
@@ -125,12 +164,12 @@ function add_chatbot_icon()
 
         .user-message {
             align-self: flex-end;
-            background-color: #dcf8c6;
+            background-color: #b9f18e;
             border-radius: 10px;
             padding: 8px 12px;
             margin-bottom: 10px;
             max-width: 70%;
-            margin-top: 10px;
+            /* margin-top: 10px; */
         }
 
         .chatbot-message {
@@ -140,7 +179,26 @@ function add_chatbot_icon()
             padding: 8px 12px;
             margin-bottom: 10px;
             max-width: 70%;
-            margin-top: 10px;
+            /* margin-top: 10px; */
+        }
+
+        .chatbot-message button a {
+        text-decoration: none;
+        }
+
+        .chatbot-message button {
+            background-color: #87CEEB; /* Green background */
+            border: none;
+            color: white; /* White text */
+            padding: 8px 16px; /* Some padding */
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px; /* Rounded corners */
+            width: 100%;
         }
 
     </style>
@@ -256,7 +314,7 @@ function add_chatbot_icon()
                 for(let intent in intent_url_mapping) {
                     if(intent_url_mapping.hasOwnProperty(intent)) {
                         let url = intent_url_mapping[intent];
-                        const intentLink = '<a href="' + url + '">' + intent + '</a>';
+                        const intentLink = '<button><a href="' + url + '">' + intent + '</a></button>';
                         chatbot_response += intentLink + "</br>";
 
                         // const intentLinkBubble = document.createElement('div');
@@ -312,6 +370,8 @@ function add_chatbot_icon()
 
         function loadMessages(){
             var chatMessages = document.getElementById('chat-messages');
+            chatMessages.innerHTML = '';
+            
             var conversation = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
             conversation.forEach(function(message) {
                 if (typeof message === 'string'){
@@ -321,7 +381,7 @@ function add_chatbot_icon()
                     var content = messageParts.slice(1).join(':').trim();
 
                     var messageBubble = document.createElement('div');
-                    messageBubble.innerHTML= '<p>' + content + '</p>';
+                    messageBubble.innerHTML=  content;
 
                     if (sender === 'Flow') {
                         messageBubble.classList.add('chatbot-message');
@@ -431,8 +491,32 @@ function add_chatbot_icon()
                         var chatInput = document.getElementById('chat-input');
                         var message = chatInput.value;
                         var chatMessages = document.getElementById('chat-messages');
-                        chatMessages.innerHTML += '<p>User: ' + message + '</p>';
-                        // socket.emit("message", message);
+                        
+                        // Create a chat bubble for the user's text message
+                        var userMessageBubble = document.createElement('div');
+                        userMessageBubble.classList.add('user-message');
+                        userMessageBubble.textContent = message;
+                        chatMessages.appendChild(userMessageBubble);
+                        
+                        chatInput.value = '';
+
+
+                        //append the message to the session Storage
+                        existingData.push("User :"+ message);
+                        // Save conversation history to session Storage
+                        sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
+
+                        // // Create a chat bubble for the audio recording
+                        // var audioMessageBubble = document.createElement('div');
+                        // audioMessageBubble.classList.add('user-message');
+                        // var audioPlayer = document.createElement('audio');
+                        // audioPlayer.src = URL.createObjectURL(audioBlob);
+                        // audioPlayer.controls = true;
+                        // audioMessageBubble.appendChild(audioPlayer);
+                        // chatMessages.appendChild(audioMessageBubble);
+
+                        // chatMessages.innerHTML += '<p>User: ' + message + '</p>';
+                        // // socket.emit("message", message);
                         json_ = {"message": message, "audio": audioBlob}
                         console.log("Audio message sent")
                         socket.emit("audio_message", json_);
