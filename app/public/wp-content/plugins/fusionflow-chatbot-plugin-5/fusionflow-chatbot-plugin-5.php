@@ -63,7 +63,7 @@ function add_chatbot_icon()
             border: 1px solid #ccc;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin-top: 10px;
-            max-width: 400px;
+            width: 350px;
             /* Set a maximum width for the chatbox */
         }
 
@@ -318,10 +318,10 @@ function add_chatbot_icon()
                     console.log("message load", message);
                     var messageParts = message.split(':');
                     var sender = messageParts[0].trim();
-                    var content = messageParts[1].trim();
+                    var content = messageParts.slice(1).join(':').trim();
 
                     var messageBubble = document.createElement('div');
-                    messageBubble.textContent = content;
+                    messageBubble.innerHTML= '<p>' + content + '</p>';
 
                     if (sender === 'Flow') {
                         messageBubble.classList.add('chatbot-message');
@@ -333,7 +333,13 @@ function add_chatbot_icon()
                 }
             });
         }
-        
+        // function loadMessages(){
+        //     var chatMessages = document.getElementById('chat-messages');
+        //     var conversation = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
+        //     conversation.forEach(function(message){
+        //         chatMessages.innerHTML += '<p>' + message + '</p>';
+        //     });
+        // }
         
 
         function sendMessage() {
