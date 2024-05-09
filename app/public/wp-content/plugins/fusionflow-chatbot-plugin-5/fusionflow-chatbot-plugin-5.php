@@ -265,6 +265,38 @@ function add_chatbot_icon()
             }
         }
 
+        function yesnoClicked(yesorno) {
+            console.log("button clicked")
+            var chatMessages = document.getElementById('chat-messages');
+            var chatbotMessageBubble = document.createElement('div');
+            if (yesorno == "yes") {
+                response = "Great!!! Let me know if you need anything else.";
+            } else if (yesorno == "no") {
+                response = "Can you please tell me what you want more precisely";
+                 
+            }
+            chatbotMessageBubble.textContent = response;
+            chatbotMessageBubble.classList.add('chatbot-message');
+            chatMessages.appendChild(chatbotMessageBubble);
+
+            //append the message to the session Storage
+            existingData.push("Flow:" + chatbotMessageBubble.textContent);
+            // Save conversation history to session Storage
+            sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
+
+            // Create a SpeechSynthesisUtterance
+            const utterance = new SpeechSynthesisUtterance(response);
+            // Select a voice
+            const voices = speechSynthesis.getVoices();
+            utterance.voice = voices[0]; // Choose a specific voice
+
+            // Set the rate to slow down the speech
+            utterance.rate = 0.5; // Adjust this value to slow down further if needed
+
+            // Speak the text
+            speechSynthesis.speak(utterance);
+        }
+
         socket.on("response", (message)=>{
 
             chatbot_state = message.state
@@ -296,6 +328,7 @@ function add_chatbot_icon()
                 let intent = Object.keys(intent_url_mapping)[0];
                 let url = intent_url_mapping[intent];
 
+                response += "</br><button onclick=\"yesnoClicked('yes')\">Yes</button><button onclick=\"yesnoClicked('no')\">No</button>";
                 //append the message to the session Storage
                 existingData.push("Flow :"+ response);
                 // Save conversation history to session Storage
@@ -401,7 +434,8 @@ function add_chatbot_icon()
             // let intent = Object.keys(intent_url_mapping)[0];
             // let url = intent_url_mapping[intent];
 
-            let response = "We have redirected you to " + intent +"</br>Is this the resource you wanted?"
+            let response = "We have redirected you to " + intent +"</br>Is this the resource you wanted?";
+            response += "</br><button onclick=\"yesnoClicked('yes')\">Yes</button><button onclick=\"yesnoClicked('no')\">No</button>";
             //append the message to the session Storage
             existingData.push("Flow :"+ response);
             // Save conversation history to session Storage
@@ -426,7 +460,7 @@ function add_chatbot_icon()
 
         function loadMessages(){
             var chatMessages = document.getElementById('chat-messages');
-            chatMessages.innerHTML = '';
+            chatMessages.innerHTML = '<div class="chatbot-message">Hi, I\'m Flow, I support you to navigate the website. You can use record button to speak and gesture a number to navigate when options are given.</div>';
             
             var conversation = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
             conversation.forEach(function(message) {
@@ -551,17 +585,17 @@ function add_chatbot_icon()
                         // Create a chat bubble for the user's text message
                         var userMessageBubble = document.createElement('div');
                         userMessageBubble.classList.add('user-message');
-                        userMessageBubble.textContent = message;
-                        chatMessages.appendChild(userMessageBubble);
-                        
+                        if(message) {
+                            userMessageBubble.textContent = message;
+                            chatMessages.appendChild(userMessageBubble);
+                            //append the message to the session Storage
+                            existingData.push("User :"+ message);
+                            // Save conversation history to session Storage
+                            sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
+                        }
+                    
                         chatInput.value = '';
-
-
-                        //append the message to the session Storage
-                        existingData.push("User :"+ message);
-                        // Save conversation history to session Storage
-                        sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
-
+                        
                         // // Create a chat bubble for the audio recording
                         // var audioMessageBubble = document.createElement('div');
                         // audioMessageBubble.classList.add('user-message');
