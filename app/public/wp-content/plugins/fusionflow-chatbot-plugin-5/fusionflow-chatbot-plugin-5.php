@@ -22,7 +22,7 @@ function add_chatbot_icon()
     </head>
     <body>
         <div class="chatbot-container">
-            <div class="chatbot-icon" id="chatbot-icon" onclick="hideChatbotIcon()">
+            <div class="chatbot-icon" id="chatbot-icon" onclick="toggleChatboxIcon()">
                 <img src="http://fusionflow2.local/wp-content/uploads/2023/12/chatbot.png" alt="Chatbot Icon">
             </div>
             <div class="chatbox" id="chatbox" style="display: none;">
@@ -221,6 +221,27 @@ function add_chatbot_icon()
         // retrieve data in sessionStorage
         var existingData = JSON.parse(sessionStorage.getItem('chatHistory')) || [];
 
+        function toggleChatboxIcon() {
+            const chatbotIcon = document.getElementById('chatbot-icon');
+            const chatbox = document.getElementById('chatbox');
+            const chatMessages = document.getElementById('chat-messages');
+
+            // Toggle the chatbox visibility
+            if (chatbox.style.display === 'none') {
+                chatbox.style.display = 'block';
+                chatbotIcon.style.display = 'none'; // Hide the chatbot icon
+
+                // Load messages (if applicable)
+                loadMessages();
+
+                // Scroll to the bottom of the chat messages container
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            } else {
+                chatbox.style.display = 'none';
+                chatbotIcon.style.display = 'block'; // Show the chatbot icon
+            }
+        }
+
         function hideChatbotIcon() {
             loadMessages();
             var chatbotIcon = document.getElementById('chatbot-icon');
@@ -276,12 +297,13 @@ function add_chatbot_icon()
                 let url = intent_url_mapping[intent];
 
                 //append the message to the session Storage
-                existingData.push("Flow :", intent);
+                existingData.push("Flow :"+ response);
                 // Save conversation history to session Storage
                 sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
 
+                let speech = "We are redirecting you to " + intent + " page";
                 // Create a SpeechSynthesisUtterance
-                const utterance = new SpeechSynthesisUtterance(intent);
+                const utterance = new SpeechSynthesisUtterance(speech);
                 // Select a voice
                 const voices = speechSynthesis.getVoices();
                 utterance.voice = voices[0]; // Choose a specific voice
@@ -311,12 +333,13 @@ function add_chatbot_icon()
                 let chatbot_response = "Pages I found are </br>";
                 let temp = "Pages I found are </br>"
 
+                var i = 1;
                 for(let intent in intent_url_mapping) {
                     if(intent_url_mapping.hasOwnProperty(intent)) {
                         let url = intent_url_mapping[intent];
-                        const intentLink = '<button><a href="' + url + '">' + intent + '</a></button>';
+                        const intentLink = '<button style="text-align: left;"><a href="' + url + '" >'+ i + ". " + intent + '</a></button>';
                         chatbot_response += intentLink + "</br>";
-
+                        i += 1;
                         // const intentLinkBubble = document.createElement('div');
                         // intentLinkBubble.innerHTML = '<p>' + intentLink + '</p>';
                         // intentLinkBubble.classList.add('chatbot-message');
@@ -378,13 +401,15 @@ function add_chatbot_icon()
             // let intent = Object.keys(intent_url_mapping)[0];
             // let url = intent_url_mapping[intent];
 
+            let response = "We have redirected you to " + intent +"</br>Is this the resource you wanted?"
             //append the message to the session Storage
-            existingData.push("Flow :", intent);
+            existingData.push("Flow :"+ response);
             // Save conversation history to session Storage
             sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
 
+            let speech = "We are redirecting you to " + intent + " page";
             // Create a SpeechSynthesisUtterance
-            const utterance = new SpeechSynthesisUtterance(intent);
+            const utterance = new SpeechSynthesisUtterance(speech);
             // Select a voice
             const voices = speechSynthesis.getVoices();
             utterance.voice = voices[0]; // Choose a specific voice
