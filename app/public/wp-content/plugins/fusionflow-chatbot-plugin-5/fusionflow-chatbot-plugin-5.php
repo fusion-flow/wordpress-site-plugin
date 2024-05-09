@@ -259,7 +259,7 @@ function add_chatbot_icon()
                 // Set a timeout to stop the recording after 10 seconds (10000 milliseconds)
                     setTimeout(() => {
                         stopRecordingVideo(videostream, captureInterval);
-                    }, 8000);
+                    }, 100000);
                 });
             }
 
@@ -365,6 +365,37 @@ function add_chatbot_icon()
                 // Speak the text
                 speechSynthesis.speak(utterance);
             }
+            
+        });
+
+        socket.on("gesture", (message)=>{
+
+            console.log("message", message)
+
+            let url = message[0]
+            let intent = message[1]
+
+            // let intent = Object.keys(intent_url_mapping)[0];
+            // let url = intent_url_mapping[intent];
+
+            //append the message to the session Storage
+            existingData.push("Flow :", intent);
+            // Save conversation history to session Storage
+            sessionStorage.setItem('chatHistory', JSON.stringify(existingData));
+
+            // Create a SpeechSynthesisUtterance
+            const utterance = new SpeechSynthesisUtterance(intent);
+            // Select a voice
+            const voices = speechSynthesis.getVoices();
+            utterance.voice = voices[0]; // Choose a specific voice
+
+            // Set the rate to slow down the speech
+            utterance.rate = 0.5; // Adjust this value to slow down further if needed
+
+            // Speak the text
+            speechSynthesis.speak(utterance);
+
+            window.location.assign(url);
             
         });
 
@@ -603,7 +634,7 @@ function add_chatbot_icon()
             return navigator.mediaDevices.getUserMedia({ video: true })
                 .then(videostream => {
                     // Assign the video stream to a video element
-                    const video = document.createElement('video');
+                    // const video = document.createElement('video');
                     video.srcObject = videostream;
                     globalStream = videostream;
 
