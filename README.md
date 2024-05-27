@@ -1,3 +1,7 @@
+This project is a wordpress chatbot navigational plugin for a wordpress website. The website consisting of resources for people with aphasia. The chatbot assist users to navigate within the website. It takes text, audio and video as inputs and output text and audio. 
+
+Following is the guide to setup the wordpress website and plugin locally. 
+
 # WordPress site local setup guide
 
 ## **Setup local and wp_posts**
@@ -50,61 +54,3 @@ From the WP admin you can enable the plugin fusionflow-chatbot-plugin-5 to enabl
 To get audio/video inputs we need to have a https website. Therefore to make this website considered as https do the following. Add the website link ([http://fusionflow2.local](http://fusionflow2.local)) to the chrome flags and enable it.
 
 chrome://flags/#unsafely-treat-insecure-origin-as-secure
-
-## Backend setup
-
-You can assign port values to the following variables as desired.
-
-PORT_TXTAI
-
-PORT_TRANSCRIPTION
-PORT_GESTURE
-
-### Flask Backend Setup
-
-* Clone the code of flask-backend from [https://github.com/fusion-flow/flask-backend](https://github.com/fusion-flow/flask-backend).
-* Create a .env file in the root folder, copy content from the .env.example and add values for the env variable like the following.
-
-CLASSIFICATION_MODEL_ENDPOINT=http://localhost:PORT_TXTAI
-
-TRANSCRIPTION_MODEL_ENDPOINT=[http://localhost:](http://localhost:8000)PORT_TRANSCRIPTION
-
-RECOGNIZER_MODEL_ENDPOINT=http://localhost:PORT_GESTURE
-
-CLIENT_URL=[http://fusionflow2.local/](http://fusionflow2.local/)
-
-* Create a virtual environment to run the code. (Python version=3.9.12).
-* Install libraries
-
-  * pip install -r requirements.txt
-* Run the backend using the following command.
-* python app.py
-
-### Txtai api
-
-* Pull the docker image from the docker hub.
-
-  * docker pull awesomenipun/txtai-api
-* Run the docker image.
-* docker run -p PORT_TXTAI:8000 awesomenipun/txtai-api
-* Go to the fastapi - [http://localhost:PORT_TXTAI/docs#/](http://localhost:8080/docs#/)
-* Add the keywords from the following doc using /add post request.
-
-[https://docs.google.com/document/d/1tsNlhrdAzFWb2l1u4SSbKJqBZgFQs9T-eu-eAX3b53M/edit?usp=sharing](https://docs.google.com/document/d/1tsNlhrdAzFWb2l1u4SSbKJqBZgFQs9T-eu-eAX3b53M/edit?usp=sharing)
-
-* Index those data using /index endpoint.
-
-### Gesture Recognition Model Setup
-
-* Pull the docker image from the docker hub.
-  * docker pull awesomenipun/gesture-recognition-1:latest
-* Run the docker image.
-* docker run -p PORT_GESTURE:80 awesomenipun/gesture-recognition-1:latest
-* For LOCAL_PORT you can use any available port in local machine.
-
-### Transcription Model Setup
-
-* Pull the docker image from the docker hub.
-  * docker pull sanduaye/whisper-api:latest
-* Run the docker image.
-* docker run -p PORT_TRANSCRIPTION:8000 sanduaye/whisper-api:latest
